@@ -21,6 +21,6 @@ func Update(phone, password string) int {
 func Fetch(phone, password string) beans.AdminBean {
 	bean := beans.AdminBean{Phone: phone, Password: password}
 	o := orm.NewOrm()
-	o.Read(&bean)
+	o.Read(&bean, "phone", "password")
 	return bean
 }

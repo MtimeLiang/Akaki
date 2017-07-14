@@ -5,7 +5,7 @@ import (
 )
 
 type AdminBean struct {
-	Id       int    `orm:"auto"`
+	Id       int    `orm:"auto;pk"`
 	Phone    string `orm:"size(20)"`
 	Password string `orm:"size(20)"`
 }
