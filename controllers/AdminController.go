@@ -74,7 +74,7 @@ func (c *SignInController) Post() {
 			return
 		}
 	}
-	r["infoMsg"] = "注册失败"
+	r["infoMsg"] = "注册失败，手机号和密码不能为空"
 	r["status"] = 0
 	r["data"] = new(map[string]interface{})
 	return
