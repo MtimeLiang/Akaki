@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"Akaki/common"
 	"Akaki/services"
-	"Akaki/utils"
 
 	"github.com/astaxie/beego"
 )
@@ -19,7 +19,7 @@ func (c *LoginController) Post() {
 	phone := c.GetString("phone")
 	password := c.GetString("password")
 	// MD5加密
-	password = utils.MD5(password)
+	password = common.MD5(password)
 
 	r := make(map[string]interface{})
 	defer func() {
@@ -50,7 +50,7 @@ func (c *SignInController) Post() {
 	phone := c.GetString("phone")
 	password := c.GetString("password")
 	// MD5加密
-	password = utils.MD5(password)
+	password = common.MD5(password)
 
 	r := make(map[string]interface{})
 	defer func() {
