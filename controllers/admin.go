@@ -3,7 +3,6 @@ package controllers
 import (
 	"Akaki/common"
 	"Akaki/services"
-	"fmt"
 	"time"
 
 	"Akaki/common/macro"
@@ -18,6 +17,10 @@ type LoginController struct {
 }
 
 type SignInController struct {
+	beego.Controller
+}
+
+type LogoutController struct {
 	beego.Controller
 }
 
@@ -44,14 +47,14 @@ func (c *LoginController) Post() {
 	c.Data["json"] = macro.ResInfo{InfoMsg: "登录成功", Status: 1, Data: bean}
 	// 注入Cookie
 	cal := jwt.MapClaims{
-		"username": bean.Phone,
+		"phone":    bean.Phone,
 		"password": bean.Password,
 		"userId":   bean.Id,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 	t, _ := token.New(token.SignKey, cal)
 	c.Ctx.SetCookie(macro.CookieName, t)
-	return
+	c.ServeJSON()
 }
 
 func (c *SignInController) Post() {
@@ -76,15 +79,31 @@ func (c *SignInController) Post() {
 	c.ServeJSON()
 }
 
+func (c *LogoutController) Get() {
+	ts := c.Ctx.GetCookie(macro.CookieName)
+	t, err := token.Parse(ts, token.SignKey)
+	if err != nil || !t.Valid {
+		c.Data["json"] = macro.ResInfo{InfoMsg: "token验证失败", Status: 0, Data: ""}
+		c.ServeJSON()
+	}
+	c.Ctx.SetCookie(macro.CookieName, "")
+	c.Data["json"] = macro.ResInfo{InfoMsg: "退出登录成功", Status: 1, Data: ""}
+	c.ServeJSON()
+}
+
 func (c *GetAdminInfoController) Get() {
 	ts := c.Ctx.GetCookie(macro.CookieName)
 	tr, _ := token.Parse(ts, token.SignKey)
-	m, _ := token.GetMapClaims(tr)
-	for k, v := range m {
-		fmt.Println("k = ", k, "v = ", v)
+	if tr != nil {
+		m, _ := token.GetMapClaims(tr)
+		phone := m["phone"]
+		password := m["password"]
+		bean := services.Login(phone.(string), password.(string))
+		if bean.Id > 0 {
+			c.Data["json"] = macro.ResInfo{InfoMsg: "获取用户信息成功", Status: 1, Data: bean}
+			c.ServeJSON()
+		}
 	}
-	r := make(map[string]interface{})
-	r["t"] = ts
-	c.Data["json"] = r
+	c.Data["json"] = macro.ResInfo{InfoMsg: "获取用户信息失败", Status: 0, Data: ""}
 	c.ServeJSON()
 }
