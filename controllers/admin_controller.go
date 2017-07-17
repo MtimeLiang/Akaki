@@ -32,28 +32,25 @@ func (c *LoginController) Post() {
 	// MD5加密
 	password = common.MD5(password)
 
-	defer func() {
+	if len(phone) == 0 || len(password) == 0 {
+		c.Data["json"] = macro.ResInfo{InfoMsg: "登录失败，手机号和密码不能为空", Status: 0, Data: ""}
 		c.ServeJSON()
-	}()
-	if len(phone) > 0 && len(password) > 0 {
-		bean := services.Login(phone, password)
-		if bean.Id > 0 {
-			c.Data["json"] = macro.ResInfo{InfoMsg: "登录成功", Status: 1, Data: bean}
-			// 注入Cookie
-			cal := jwt.MapClaims{
-				"username": bean.Phone,
-				"password": bean.Password,
-				"userId":   bean.Id,
-				"exp":      time.Now().Add(time.Hour * 24).Unix(),
-			}
-			t, _ := token.New(token.SignKey, cal)
-			c.Ctx.SetCookie(macro.CookieName, t)
-			return
-		}
-		c.Data["json"] = macro.ResInfo{InfoMsg: "登录失败，账号或密码输入错误", Status: 0, Data: ""}
-		return
 	}
-	c.Data["json"] = macro.ResInfo{InfoMsg: "登录失败，手机号和密码不能为空", Status: 0, Data: ""}
+	bean := services.Login(phone, password)
+	if bean.Id == 0 {
+		c.Data["json"] = macro.ResInfo{InfoMsg: "登录失败，账号或密码输入错误", Status: 0, Data: ""}
+		c.ServeJSON()
+	}
+	c.Data["json"] = macro.ResInfo{InfoMsg: "登录成功", Status: 1, Data: bean}
+	// 注入Cookie
+	cal := jwt.MapClaims{
+		"username": bean.Phone,
+		"password": bean.Password,
+		"userId":   bean.Id,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+	}
+	t, _ := token.New(token.SignKey, cal)
+	c.Ctx.SetCookie(macro.CookieName, t)
 	return
 }
 
@@ -63,23 +60,20 @@ func (c *SignInController) Post() {
 	// MD5加密
 	password = common.MD5(password)
 
-	defer func() {
+	if len(phone) == 0 || len(password) == 0 {
+		c.Data["json"] = macro.ResInfo{InfoMsg: "注册失败，手机和密码不能为空", Status: 0, Data: ""}
 		c.ServeJSON()
-	}()
-	if len(phone) > 0 && len(password) > 0 {
-		bean := services.Login(phone, password)
-		if bean.Id > 0 {
-			c.Data["json"] = macro.ResInfo{InfoMsg: "注册失败，该用户已存在", Status: 0, Data: ""}
-			return
-		}
+	}
+	bean := services.Login(phone, password)
+	if bean.Id == 0 {
 		result := services.SignIn(phone, password)
 		if result == 1 {
 			c.Data["json"] = macro.ResInfo{InfoMsg: "注册成功", Status: 1, Data: ""}
-			return
+			c.ServeJSON()
 		}
 	}
-	c.Data["json"] = macro.ResInfo{InfoMsg: "注册失败，手机和密码不能为空", Status: 0, Data: ""}
-	return
+	c.Data["json"] = macro.ResInfo{InfoMsg: "注册失败", Status: 0, Data: ""}
+	c.ServeJSON()
 }
 
 func (c *GetAdminInfoController) Get() {
