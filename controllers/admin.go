@@ -72,6 +72,15 @@ func (c *SignInController) Post() {
 		result := services.SignIn(phone, password)
 		if result == 1 {
 			c.Data["json"] = macro.ResInfo{InfoMsg: "注册成功", Status: 1, Data: ""}
+			// 注入Cookie
+			cal := jwt.MapClaims{
+				"phone":    bean.Phone,
+				"password": bean.Password,
+				"userId":   bean.Id,
+				"exp":      time.Now().Add(time.Hour * 24).Unix(),
+			}
+			t, _ := token.New(token.SignKey, cal)
+			c.Ctx.SetCookie(macro.CookieName, t)
 			c.ServeJSON()
 		}
 	}
