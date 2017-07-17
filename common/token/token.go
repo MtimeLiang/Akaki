@@ -10,11 +10,11 @@ const (
 
 // New token
 // c := jwt.MapClaims{"username": "liang", "exp": time.Now().Add(time.Hour * 72).Unix(),}
-// token, err := New([]byte(SignKey), c)
-func New(signKey []byte, c jwt.MapClaims) (string, error) {
+// token, err := New(SignKey, c)
+func New(signKey string, c jwt.MapClaims) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Claims = c
-	tokenString, err := token.SignedString(signKey)
+	tokenString, err := token.SignedString([]byte(signKey))
 	return tokenString, err
 }
 
