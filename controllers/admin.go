@@ -29,7 +29,6 @@ type GetAdminInfoController struct {
 }
 
 func (c *LoginController) Post() {
-	common.ConfigResponseHeader(c.Ctx)
 	phone := c.GetString("phone")
 	password := c.GetString("password")
 	// MD5加密
