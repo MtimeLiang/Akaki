@@ -1,42 +1,31 @@
-// package common
-
-package main
+package token
 
 import (
 	"fmt"
-	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
 const (
-	tokenSignKey  = "www,Akaki,com"
-	tokenLifeHour = 72
+	SignKey = "www,Akaki,com"
 )
 
-func main() {
-	token, err := GenToken([]byte(tokenSignKey))
-	if err != nil {
-		fmt.Println("Creating token failed")
-	}
-	ParseToken(token, tokenSignKey)
-}
-
-/// 生成token
-func GenToken(signKey []byte) (string, error) {
+// New token
+// c := jwt.MapClaims{"username": "liang", "exp": time.Now().Add(time.Hour * 72).Unix(),}
+// token, err := New([]byte(SignKey), c)
+func New(signKey []byte, c jwt.MapClaims) (string, error) {
 	// Create the token
 	token := jwt.New(jwt.SigningMethodHS256)
 	// Set some claims
-	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Hour * tokenLifeHour).Unix()
-	token.Claims = claims
+	token.Claims = c
 	// Sign and get the complete encoded token as a string
 	tokenString, err := token.SignedString(signKey)
 	return tokenString, err
 }
 
-/// 解析验证token
-func ParseToken(tokenStr, signKey string) (token *jwt.Token, err error) {
+// Parse token
+// t, err := Parse(token, SignKey)
+func Parse(tokenStr, signKey string) (token *jwt.Token, err error) {
 	jwtToken, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return []byte(signKey), nil
 	})
@@ -47,4 +36,11 @@ func ParseToken(tokenStr, signKey string) (token *jwt.Token, err error) {
 	}
 	fmt.Println("This token is terrible!  I cannot accept this.")
 	return nil, err
+}
+
+// Get MapClaims
+// m, ok := GetMapClaims(token)
+func GetMapClaims(t *jwt.Token) (m jwt.MapClaims, ok bool) {
+	m, ok = interface{}(t.Claims).(jwt.MapClaims)
+	return m, ok
 }
