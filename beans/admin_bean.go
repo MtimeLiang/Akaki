@@ -16,5 +16,5 @@ func init() {
 
 /// 自定义表名
 func (this *AdminBean) TableName() string {
-	return "admin_member"
+	return "admin_list"
 }
